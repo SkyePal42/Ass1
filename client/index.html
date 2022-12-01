@@ -17,6 +17,28 @@
     <link rel="icon" type="image/x-icon" href="/img/twister.svg">
 
     <script>
+        // Bootstrap Validation Forms
+        // Example starter JavaScript for disabling form submissions if there are invalid fields
+
+        window.onload = () => {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        }
+
+
+        // Twister Scripts
         async function login() {
             await loadPosts(() => {
                 document.getElementById("loginSection").hidden = true;
@@ -34,29 +56,73 @@
             var res = await fetch(`api/post/get/all/${document.getElementById("username").value}`)
             let postsData = await res.json()
             let postsHTML = ""
-            postsData.forEach(post => {
+            postsData.reverse().forEach(post => {
+                let d = new Date(post.creationDate)
                 postsHTML +=
-                    `<div class="card text-center postCardBody" id="post${post.id}">
+                    `<div class="card text-center postCardBody mb-3" id="post${post.id}">
                         <div class="card-header postCardHeader p-2">
                             <p class="fs-2 mb-0">${post.title}</p>
                         </div>
                         <div class="card-body p-2">
                             <blockquote class="blockquote mb-0">
                                 <p>${post.content}</p>
-                                <footer class="blockquote-footer postCardQuoted">${post.user} <cite title="Source Title">(${new Date(post.creationDate).toDateString()})</cite></footer>
+                                <footer class="blockquote-footer postCardQuoted">${post.user} <cite title="Source Title">(${d.getDay()}/${d.getMonth()}/${d.getFullYear()} - ${d.getHours()}:${d.getMinutes()})</cite></footer>
                             </blockquote>
                         </div>
                         <div class="card-footer postCardFooter">
-                            ${post.liked ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>'} <span class="likes">${post.likes}</span> | Comments: <span class="comments">${post.comments}</span>
+                            <div class="row">
+                                <div class="col-6 d-flex justify-content-center">
+                                    <div class="btn btn-outline-light likes" id="post${post.id}Like">${post.liked ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>'} ${post.likes}</div>
+                                </div>
+                                <div class="col-6 d-flex justify-content-center">
+                                    <div class="btn btn-outline-light comments" id="post${post.id}Comment"><i class="fa-solid fa-comment"></i> ${post.comments}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>`
             });
             document.getElementById("postsFeed").innerHTML = postsHTML;
+            let username = document.getElementById("username").value
+            postsData.forEach(post => {
+                document.getElementById(`post${post.id}Like`).addEventListener('click', async (event) => {
+                    fetch(`/api/post/like`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ post: post.id, user: username }),
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status == 200) {
+                                document.getElementById(`post${post.id}Like`).innerHTML = `${data.liked ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>'} ${data.likes}`
+                            }
+                        })
+                })
+            })
             try {
                 next()
             } catch (error) {
 
             }
+        }
+        function newPost() {
+            document.getElementById("addPost").hidden = false;
+        }
+        function closeNewPost() {
+            document.getElementById("addPost").hidden = true;
+            document.getElementById("newTitle").value = "";
+            document.getElementById("newContent").value = "";
+        }
+        function addPost() {
+            fetch(`/api/post/add`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title: document.getElementById("newTitle").value, content: document.getElementById("newContent").value, user: document.getElementById("username").value }),
+            })
+                .then(res => loadPosts(closeNewPost()))
         }
     </script>
 </head>
@@ -70,23 +136,64 @@
                 <div class="col-12 col-md-8 col-lg-6 col-xl-5">
                     <div class="card bg-dark text-white" style="border-radius: 1rem;">
                         <div class="card-body p-5 text-center">
-                            <img class="img-fluid mb-4" src="/img/twister64.webp"
-                                alt="the twister logo which is 4 unlocked padlocks rotated 90 degrees to each other and stacked on top of each other">
+                            <img class="img-fluid mb-4" src="/img/twister64.webp" alt="the twister logo which is 4 unlocked padlocks rotated 90 degrees to each other and stacked on top of each other">
                             <h2 class="fw-bold text-uppercase">Twister</h2>
                             <h4 class="mb-4 text-uppercase text-white-50">No-Auth Social Media</h4>
-                            <div class="form-outline form-black mb-4">
-                                <input type="text" id="username"
-                                    class="form-control form-control-lg text-center text-white"
-                                    placeholder="username..." id="username" />
-                            </div>
-                            <button class="btn btn-outline-light btn-lg px-5" onclick="login()"
-                                type="submit">Login</button>
+                            <form action="javascript: login()" class="row g-3 needs-validation" novalidate>
+                                <div class="col-md-12 d-flex justify-content-center">
+                                    <div class="input-group has-validation" style="width: 300px;">
+                                        <span class="input-group-text" id="inputGroupPrepend">@</span>
+                                        <input type="text" id="username" class="form-control form-control-lg text-center text-white" placeholder="username..." required />
+                                        <div class="invalid-feedback">
+                                            Username cannot be blank
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-outline-light btn-lg px-5" type="submit">Login</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+    <div id="addPost" class="vh-100 vw-100 gradient-custom position-absolute top-50 start-50 translate-middle" hidden>
+        <div class="container py-5 h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                    <div class="card bg-dark text-white" style="border-radius: 1rem;">
+                        <div class="card-body p-4 px-5 text-center">
+                            <h1>New Post</h1>
+                            <span onclick="closeNewPost()" type="button" class="btn-close btn-close-white position-absolute translate-middle border border-dark" aria-label="Close" style=" top:10%; left:90%; "></span>
+                            <form action="javascript: addPost()" class="row g-3 needs-validation" novalidate>
+                                <div class="col-md-12 d-flex justify-content-center">
+                                    <div class="input-group has-validation">
+                                        <input type="text" class="form-control" id="newTitle" placeholder="Post Title..." required></input>
+                                        <div class="invalid-feedback">
+                                            You need a title to post
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 d-flex justify-content-center">
+                                    <div class="input-group has-validation">
+                                        <textarea class="form-control" id="newContent" rows="3" placeholder="Post Content..." required></textarea>
+                                        <div class="invalid-feedback">
+                                            You need to have content to post
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-outline-light btn-lg px-5" type="submit">Post</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <section id="postsSection" class="vh-100" hidden>
         <div class="container py-5 h-100">
             <div class="row d-flex justify-content-center align-items-center h-100">
@@ -94,22 +201,20 @@
                     <div class="card bg-dark text-white" style="border-radius: 1rem; min-height: 100%;">
                         <div class="container">
                             <div class="row">
-                                <div class="card-body text-center col-sm-4  order-sm-2 pt-sm-5">
+                                <div class="card-body text-center col-sm-3  order-sm-2 pt-sm-5">
                                     <div class="content">
                                         <div class="row gy-sm-3">
                                             <div class="col-6 col-sm-12">
-                                                <button class="btn btn-outline-light btn-lg px-4" onclick="newPost()"
-                                                    type="submit">New Post</button>
+                                                <button class="btn btn-outline-light btn-lg px-4" onclick="newPost()" type="submit">New Post</button>
                                             </div>
                                             <div class="col-6 col-sm-12">
-                                                <button class="btn btn-outline-light btn-lg px-4" onclick="logout()"
-                                                    type="submit">Logout</button>
+                                                <button class="btn btn-outline-light btn-lg px-4" onclick="logout()" type="submit">Logout</button>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="border-bottom border-white mt-3 d-sm-none"></div>
                                 </div>
-                                <div class="card-body p-5 text-center col-sm-8 order-sm-1 overflow-auto" id="postsFeed">
+                                <div class="card-body p-5 text-center col-sm-9 order-sm-1 overflow-auto" id="postsFeed">
                                 </div>
                             </div>
                         </div>

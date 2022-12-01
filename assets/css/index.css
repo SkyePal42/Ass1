@@ -1,6 +1,16 @@
 body {
     background-color: rgb(40, 80, 114);
 }
+#loginSection {
+    z-index: 2;
+}
+#addPost {
+    z-index: 1;
+    background-color: rgba(114, 114, 114, 0.7);
+}
+#postsSection {
+    z-index: 0;
+}
 #username {
     background-color: rgb(70, 70, 70);
 }
@@ -23,8 +33,19 @@ body {
     color: #b3b3b3;
 }
 .likes {
-    color: rgb(255, 0, 200);
+    /* color: rgb(255, 0, 200); */
+    width: 105px;
+}
+.likes:hover svg.fa-heart[data-prefix="far"] {
+    color: red 
+}
+.likes:not(:hover) svg.fa-heart[data-prefix="fas"] {
+    color: red 
 }
 .comments {
+    /* color: rgb(0, 183, 255); */
+    width: 105px;
+}
+.comments:hover svg.fa-comment {
     color: rgb(0, 183, 255);
 }
