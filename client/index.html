@@ -13,22 +13,50 @@
     <script defer src="fontawesome/js/solid.js"></script>
     <script defer src="fontawesome/js/fontawesome.js"></script>
 
-    <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="icon" type="image/x-icon" href="/img/twister64.webp">
 
     <script>
         async function login() {
-            var res = await fetch('list')
-            var body = await res.json()
-            // document.getElementById("content").innerHTML = body.data
-            // document.getElementById("content2").innerHTML = body.second_data
-            console.log(res)
-
-            document.getElementById("loginSection").hidden = true;
-            document.getElementById("postsSection").hidden = false;
+            await loadPosts(() => {
+                document.getElementById("loginSection").hidden = true;
+                document.getElementById("postsSection").hidden = false;
+            })
         };
         function logout() {
+            document.getElementById("username").value = "";
+            document.getElementById("postsFeed").innerHTML = "";
+
             document.getElementById("loginSection").hidden = false;
             document.getElementById("postsSection").hidden = true;
+        }
+        async function loadPosts(next) {
+            var res = await fetch('api/post/get/all')
+            let postsData = await res.json()
+            let postsHTML = ""
+            postsData.forEach(post => {
+                postsHTML +=
+                    `<div class="card text-center postCardBody" id="post${post.id}">
+                        <div class="card-header postCardHeader p-2">
+                            <p class="fs-2 mb-0">${post.title}</p>
+                        </div>
+                        <div class="card-body p-2">
+                            <blockquote class="blockquote mb-0">
+                                <p>${post.content}</p>
+                                <footer class="blockquote-footer postCardQuoted">${post.user} <cite title="Source Title">(${new Date(post.creationDate).toDateString()})</cite></footer>
+                            </blockquote>
+                        </div>
+                        <div class="card-footer postCardFooter">
+                            Likes: <span class="likes">${post.likes}</span> | Comments: <span class="comments">${post.comments}</span>
+                        </div>
+                    </div>`
+            });
+            document.getElementById("postsFeed").innerHTML = postsHTML;
+            try {
+                next()
+            } catch (error) {
+
+            }
         }
     </script>
 </head>
@@ -42,7 +70,10 @@
                 <div class="col-12 col-md-8 col-lg-6 col-xl-5">
                     <div class="card bg-dark text-white" style="border-radius: 1rem;">
                         <div class="card-body p-5 text-center">
-                            <h2 class="fw-bold mb-4 text-uppercase">Twister Login</h2>
+                            <img class="img-fluid mb-4" src="/img/twister64.webp"
+                                alt="the twister logo which is 4 unlocked padlocks rotated 90 degrees to each other and stacked on top of each other">
+                            <h2 class="fw-bold text-uppercase">Twister</h2>
+                            <h4 class="mb-4 text-uppercase text-white-50">No-Auth Social Media</h4>
                             <div class="form-outline form-black mb-4">
                                 <input type="text" id="username"
                                     class="form-control form-control-lg text-center text-white"
@@ -56,14 +87,31 @@
             </div>
         </div>
     </section>
-    <section id="postsSection" class="vh-100" hidden>
+    <section id="postsSection" class="vh-100 overflow-scroll" hidden>
         <div class="container py-5 h-100">
             <div class="row d-flex justify-content-center align-items-center h-100">
-                <div class="col-12 col-md-8 col-lg-6 col-xl-5">
-                    <div class="card bg-dark text-white" style="border-radius: 1rem;">
-                        <div class="card-body p-5 text-center">
-                            <button class="btn btn-outline-light btn-lg px-5" onclick="logout()"
-                                type="submit">Logout</button>
+                <div class="col-12">
+                    <div class="card bg-dark text-white" style="border-radius: 1rem; min-height: 100%;">
+                        <div class="container">
+                            <div class="row">
+                                <div class="card-body text-center col-sm-4  order-sm-2">
+                                    <div class="content">
+                                        <div class="row gy-sm-3">
+                                            <div class="col-6 col-sm-12">
+                                                <button class="btn btn-outline-light btn-lg px-4" onclick="newPost()"
+                                                    type="submit">New Post</button>
+                                            </div>
+                                            <div class="col-6 col-sm-12">
+                                                <button class="btn btn-outline-light btn-lg px-4" onclick="logout()"
+                                                    type="submit">Logout</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="border-bottom border-white mt-3 d-sm-none"></div>
+                                </div>
+                                <div class="card-body p-5 text-center col-sm-8 order-sm-1" id="postsFeed">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,3 +1,5 @@
+// TODO https://adventofcode.com/2022/day/1
+
 const express = require("express");
 const app = express();
 
@@ -9,10 +11,22 @@ app.get(["/", "/index", "/home"], (req, res) => {
 	res.sendFile(__dirname + "/client/index.html");
 });
 
-app.get("/post/get/all", (req, res) => {
-	resp.json({
-		data: "hello",
-	});
+app.get("/api/post/get/all", (req, res) => {
+	// TODO https://stackabuse.com/reading-and-writing-json-files-with-node-js/
+	res.json([
+		{
+			id: 0,
+			title: "To the Mun",
+			content:
+				"We plan to go to the Mun. Not because it is easy, but because its easier than Minmus.",
+			user: "Kerman",
+			creationDate: 1669906884089,
+			lastEdit: 1669906884089,
+			likes: 0,
+			liked: false,
+			comments: 0,
+		},
+	]);
 });
 
 app.get("/list", function (req, resp) {

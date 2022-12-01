@@ -1,6 +1,30 @@
+body {
+    background-color: rgb(40, 80, 114);
+}
 #username {
-    background-color: none;
+    background-color: rgb(70, 70, 70);
 }
 #username::placeholder {
+    color: rgb(165, 165, 165);
+}
+.postCardHeader {
+    background-color: rgb(78, 78, 78);
     color: white;
+}
+.postCardBody {
+    background-color: rgb(85, 85, 85);
+    color: white;
+}
+.postCardQuoted {
+    color: #b3b3b3;
+}
+.postCardFooter {
+    background-color: rgb(78, 78, 78);
+    color: #b3b3b3;
+}
+.likes {
+    color: rgb(255, 0, 200);
+}
+.comments {
+    color: rgb(0, 183, 255);
 }
