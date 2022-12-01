@@ -1,0 +1,6 @@
+#username {
+    background-color: none;
+}
+#username::placeholder {
+    color: white;
+}
