@@ -1,1 +1,40 @@
-{"posts":[{"title":"To the Mun","content":"We plan to go to the Mun. Not because it is easy, but because its easier than Minmus.","user":"Kerman","creationDate":1669906884089,"lastEdit":1669906884089,"likes":["Kerman","Bob","s","d"],"comments":[]},{"title":"hello","content":"woot woot v2","user":"d","creationDate":1669938339478,"lastEdit":1669938339478,"likes":["Kerman","a"],"comments":[]},{"title":"it all works","content":"yay","user":"Skye","creationDate":1669938464275,"lastEdit":1669938464275,"likes":[],"comments":[]}]}
+{
+	"posts": [
+		{
+			"title": "To the Mun",
+			"content": "We plan to go to the Mun. Not because it is easy, but because its easier than Minmus.",
+			"user": "Kerman",
+			"creationDate": 1669906884089,
+			"lastEdit": 1669906884089,
+			"likes": ["Kerman", "Bob", "s", "d"],
+			"comments": []
+		},
+		{
+			"title": "hello",
+			"content": "woot woot v2",
+			"user": "d",
+			"creationDate": 1669938339478,
+			"lastEdit": 1669938339478,
+			"likes": ["Kerman", "a"],
+			"comments": []
+		},
+		{
+			"title": "it all works",
+			"content": "yay",
+			"user": "Skye",
+			"creationDate": 1669938464275,
+			"lastEdit": 1669938464275,
+			"likes": [],
+			"comments": []
+		},
+		{
+			"title": "watch nora: a doll's house :)",
+			"content": "for men slander",
+			"user": "yashy",
+			"creationDate": 1670018166789,
+			"lastEdit": 1670018166789,
+			"likes": ["yashy", "a", "b", "c"],
+			"comments": []
+		}
+	]
+}

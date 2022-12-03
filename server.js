@@ -99,6 +99,32 @@ app.post("/api/post/add", (req, res) => {
 	res.sendStatus(200);
 });
 
+app.post("/api/post/comment/add", (req, res) => {
+	const file = __dirname + "/data.json";
+	jsonfile.readFile(file, (err, data) => {
+		if (err) console.error(err);
+		data.posts.push({
+			comment: req.body.comment,
+			user: req.body.user,
+			creationDate: Date.now(),
+		});
+		jsonfile.writeFile(file, data, function (err) {
+			if (err) console.error(err);
+		});
+	});
+
+	res.sendStatus(200);
+});
+
+app.get("/api/post/comment/get/:post", (req, res) => {
+	const file = __dirname + "/data.json";
+	jsonfile.readFile(file, (err, data) => {
+		if (err) console.error(err);
+		res.json(data.posts[req.params.post].comments);
+		// case handling for if not a valid post
+	});
+});
+
 app.get("/list", function (req, resp) {
 	resp.json({
 		data: "hello",
