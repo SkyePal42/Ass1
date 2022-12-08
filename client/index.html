@@ -23,7 +23,9 @@
         // Bootstrap Validation Forms
         // Example starter JavaScript for disabling form submissions if there are invalid fields
 
-        window.onload = () => {
+        window.onload = () => { formValidationGenerator() }
+
+        function formValidationGenerator() {
             // Fetch all the forms we want to apply custom Bootstrap validation styles to
             const forms = document.querySelectorAll('.needs-validation')
 
@@ -38,6 +40,7 @@
                     form.classList.add('was-validated')
                 }, false)
             })
+
         }
 
 
@@ -85,6 +88,21 @@
                             </div>
                         </div>
                         <div class="card-footer accordion-collapse collapse" id="post${post.id}Body" aria-labelledby="post${post.id}Header">
+                            <ul class="list-group my-3 text-start" id="${post.id}CommentsFeed">
+                            </ul>
+                            <form action="javascript: addComment(${post.id})" class="g-3 row needs-validation" novalidate>
+                                <div class="col-12 col-md-9">
+                                    <div class="input-group has-validation">
+                                        <input type="text" id="${post.id}NewComment" class="form-control form-control-lg text-center text-white darkInput" placeholder="comment..." required />
+                                        <div class="invalid-feedback">
+                                            Comment cannot be blank
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <button class="btn btn-outline-light btn-lg" type="submit">Comment</button>
+                                </div>
+                            </form>
                         </div>
                     </div>`
             });
@@ -107,11 +125,13 @@
                         })
                 })
             })
+            postsData.forEach(post => loadComments(post.id))
             try {
                 next()
             } catch (error) {
 
             }
+            formValidationGenerator()
         }
         function newPost() {
             document.getElementById("addPost").hidden = false;
@@ -130,6 +150,54 @@
                 body: JSON.stringify({ title: document.getElementById("newTitle").value, content: document.getElementById("newContent").value, user: document.getElementById("username").value }),
             })
                 .then(res => loadPosts(closeNewPost()))
+        }
+        function addComment(postID) {
+            fetch(`/api/post/comment/add`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ comment: document.getElementById(`${postID}NewComment`).value, user: document.getElementById("username").value, post: postID }),
+            })
+                .then(res => { document.getElementById(`${postID}NewComment`).value = ""; loadComments(postID) })
+        }
+        function loadComments(postID) {
+            fetch(`/api/post/comment/get/${postID}`, {
+                method: 'GET'
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status == 200) {
+                        let comments = data.comments
+                        let commentsHTML = ""
+                        comments.forEach(comment => {
+                            let d = new Date(comment.creationDate)
+                            commentsHTML += `<li class="bg-dark text-white list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-bold">
+                                            @${comment.user}
+                                        </div>
+                                            ${comment.comment}
+                                    </div>
+                                    <span class="badge bg-secondary border border-white rounded-pill">
+                                        ${d.getDay()}/${d.getMonth()}/${d.getFullYear()} ${formatAMPM(d)}
+                                    </span >
+                                </li > `
+                        })
+                        document.getElementById(`${postID}CommentsFeed`).innerHTML = commentsHTML
+                    }
+
+                })
+        }
+        function formatAMPM(date) {
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+            var ampm = hours >= 12 ? 'pm' : 'am';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            var strTime = hours + ':' + minutes + ' ' + ampm;
+            return strTime;
         }
     </script>
 </head>
@@ -150,7 +218,7 @@
                                 <div class="col-md-12 d-flex justify-content-center">
                                     <div class="input-group has-validation" style="width: 300px;">
                                         <span class="input-group-text" id="inputGroupPrepend">@</span>
-                                        <input type="text" id="username" class="form-control form-control-lg text-center text-white" placeholder="username..." required />
+                                        <input type="text" id="username" class="form-control form-control-lg text-center text-white darkInput" placeholder="username..." required />
                                         <div class="invalid-feedback">
                                             Username cannot be blank
                                         </div>

@@ -5,7 +5,11 @@
 	"main": "server.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "node server.js"
+		"pretest": "eslint server.js",
+		"start": "nodemon server.js",
+		"prettier-format": "prettier --config .prettierrc ./**/*.js --write",
+		"prettier-watch": "onchange ./**/*.ts -- prettier --write {{changed}}",
+		"lint": "eslint . --ext .js"
 	},
 	"author": "",
 	"license": "ISC",
@@ -15,6 +19,18 @@
 		"jsonfile": "^6.1.0"
 	},
 	"devDependencies": {
-		"nodemon": "^2.0.20"
+		"eslint": "^8.29.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-config-prettier-standard": "^4.0.1",
+		"eslint-config-standard": "^17.0.0",
+		"eslint-plugin-import": "^2.26.0",
+		"eslint-plugin-n": "^15.6.0",
+		"eslint-plugin-node": "^11.1.0",
+		"eslint-plugin-prettier": "^4.2.1",
+		"eslint-plugin-promise": "^6.1.1",
+		"nodemon": "^2.0.20",
+		"onchange": "^7.1.0",
+		"prettier": "2.8.0",
+		"prettier-config-standard": "^5.0.0"
 	}
 }
