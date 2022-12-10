@@ -5,7 +5,7 @@ const app = express();
 const jsonfile = require('jsonfile');
 const path = require('path');
 
-const port = 8090;
+const port = 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '/assets')));
 app.use(express.static(path.join(__dirname, '/client')));
