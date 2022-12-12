@@ -1,4 +1,7 @@
+#!/usr/bin/env node
 // TODO https://adventofcode.com/2022/day/1
+// Service on VPS: Twister
+// How it was made: https://stackoverflow.com/questions/4018154/how-do-i-run-a-node-js-app-as-a-background-service
 
 const express = require('express');
 const app = express();
