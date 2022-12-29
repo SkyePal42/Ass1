@@ -234,6 +234,9 @@
             </div>
         </div>
     </section>
+
+    <!-- * ADD POST FORM -->
+
     <div id="addPost" class="vh-100 vw-100 gradient-custom position-absolute top-50 start-50 translate-middle" hidden>
         <div class="container py-5 h-100">
             <div class="row d-flex justify-content-center align-items-center h-100">
@@ -269,18 +272,24 @@
             </div>
         </div>
     </div>
+
+    <!-- * VIEW POSTS PAGE -->
+
     <section id="postsSection" class="vh-100" hidden>
         <div class="container py-5 h-100">
             <div class="row d-flex justify-content-center align-items-center h-100">
-                <div class="col-12">
-                    <div class="card bg-dark text-white" style="border-radius: 1rem; min-height: 100%;">
-                        <div class="container">
-                            <div class="row">
+                <div class="col-12 h-100">
+                    <div class="card bg-dark text-white h-100" style="border-radius: 1rem; min-height: 100%;">
+                        <div class="container h-100">
+                            <div class="row h-100 overflow-hidden">
                                 <div class="card-body text-center col-sm-3  order-sm-2 pt-sm-5">
                                     <div class="content">
                                         <div class="row gy-sm-3">
                                             <div class="col-6 col-sm-12">
                                                 <button class="btn btn-outline-light btn-lg px-4" onclick="newPost()" type="submit">New Post</button>
+                                            </div>
+                                            <div class="col-6 col-sm-12">
+                                                <button class="btn btn-outline-light btn-lg px-4" onclick="setIcon()" type="submit">Edit Profile</button>
                                             </div>
                                             <div class="col-6 col-sm-12">
                                                 <button class="btn btn-outline-light btn-lg px-4" onclick="logout()" type="submit">Logout</button>
@@ -289,7 +298,10 @@
                                     </div>
                                     <div class="border-bottom border-white mt-3 d-sm-none"></div>
                                 </div>
-                                <div class="card-body p-5 text-center col-sm-9 order-sm-1 overflow-auto accordion" id="postsFeed">
+                                <div class="card-body text-center col-sm-9 order-sm-1 overflow-auto accordion h-100 overflow-auto">
+                                    <button class="btn btn-outline-light btn-lg px-4 mb-3" onclick="loadPosts()">Refresh Page</button>
+                                    <div id="postsFeed"></div>
+                                    <p class="pb-5 mb-5 mb-sm-0 pb-sm-0">No Older Posts</p>
                                 </div>
                             </div>
                         </div>
