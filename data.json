@@ -1,131 +1,58 @@
 {
   "posts": [
     {
-      "title": "To the Mun",
-      "content": "We plan to go to the Mun. Not because it is easy, but because its easier than Minmus.",
-      "user": "Kerman",
-      "creationDate": 1669906884089,
-      "lastEdit": 1669906884089,
-      "likes": ["Kerman", "Bob", "s", "d"],
-      "comments": []
-    },
-    {
-      "title": "hello",
-      "content": "woot woot v2",
-      "user": "d",
-      "creationDate": 1669938339478,
-      "lastEdit": 1669938339478,
-      "likes": ["Kerman", "a", "why"],
-      "comments": []
-    },
-    {
-      "title": "it all works",
-      "content": "yay",
-      "user": "Skye",
-      "creationDate": 1669938464275,
-      "lastEdit": 1669938464275,
-      "likes": [],
-      "comments": []
-    },
-    {
-      "title": "watch nora: a doll's house :)",
-      "content": "for men slander",
-      "user": "yashy",
-      "creationDate": 1670018166789,
-      "lastEdit": 1670018166789,
-      "likes": ["yashy", "a", "b", "c", "d"],
+      "title": "Everything is Awesome",
+      "content": "Everything is cool when you're...",
+      "user": "a",
+      "creationDate": 1673805620531,
+      "lastEdit": 1673805620531,
+      "likes": ["c"],
       "comments": [
         {
-          "comment": "lol this is not the same person as made this comment, get hacked xddd",
-          "user": "yashy",
-          "creationDate": 1670416292879
+          "comment": "oops. need to make a comment to pass the test",
+          "user": "a",
+          "creationDate": 1674508533371
         }
       ]
     },
     {
-      "title": "hi",
-      "content": "hi",
-      "user": "d",
-      "creationDate": 1670258775227,
-      "lastEdit": 1670258775227,
-      "likes": ["a"],
+      "title": "Hello",
+      "content": "I'm new here",
+      "user": "b",
+      "creationDate": 1673818318718,
+      "lastEdit": 1673818318718,
+      "likes": ["c"],
       "comments": [
-        {
-          "comment": "*cough* you mean hello",
-          "user": "hello",
-          "creationDate": 1670260724151
-        },
-        {
-          "comment": "i mean don't be so pedantic",
-          "user": "d",
-          "creationDate": 1670415857854
-        },
-        {
-          "comment": "actually @d I think you'll find that greetings can hold great cultural meaning",
-          "user": "gday",
-          "creationDate": 1670415923524
-        },
-        { "comment": "a", "user": "a", "creationDate": 1670416113443 }
-      ]
-    },
-    {
-      "title": "its ya boi",
-      "content": "hey guys welcome back to my youtube channel",
-      "user": "why",
-      "creationDate": 1670416180237,
-      "lastEdit": 1670416180237,
-      "likes": ["why2", "d"],
-      "comments": [
-        {
-          "comment": "woah that's cool do a trickshot",
-          "user": "why2",
-          "creationDate": 1670416208299
-        },
-        { "comment": "no", "user": "why", "creationDate": 1670416224010 },
-        { "comment": "hi", "user": "d", "creationDate": 1670511037735 }
-      ]
-    },
-    {
-      "title": "new post",
-      "content": "wow very impressive",
-      "user": "d",
-      "creationDate": 1670511088218,
-      "lastEdit": 1670511088218,
-      "likes": ["d", "a"],
-      "comments": [
-        { "comment": "amazing", "user": "a", "creationDate": 1670511105151 }
-      ]
-    },
-    {
-      "title": "Now avaibale on the mildert website",
-      "content": "lt.mildert.co.uk",
-      "user": "d",
-      "creationDate": 1670844943167,
-      "lastEdit": 1670844943167,
-      "likes": ["d", "a"],
-      "comments": [
-        {
-          "comment": "amazing",
-          "user": "mildertian",
-          "creationDate": 1670844956613
-        }
-      ]
-    },
-    {
-      "title": "Test",
-      "content": "Is not being able to make a new post a VPS issue?",
-      "user": "d",
-      "creationDate": 1670858176402,
-      "lastEdit": 1670858176402,
-      "likes": [],
-      "comments": [
-        { "comment": "yes", "user": "d", "creationDate": 1670858182712 }
+        { "comment": "hi", "user": "a", "creationDate": 1674508432755 }
       ]
     }
   ],
   "users": {
-    "a": { "image": 0, "creation": 1671555902867, "pronoun": 1 }
+    "0": { "image": 0, "creation": 1674507988336, "pronoun": 0 },
+    "a": { "image": "5", "creation": 1673805603735, "pronoun": 0 },
+    "b": { "image": "4", "creation": 1673815208441, "pronoun": 0 },
+    "c": { "image": "7", "creation": 1673818330739, "pronoun": 0 },
+    ":user": { "image": 0, "creation": 1673819928628, "pronoun": 0 }
   },
-  "images": ["duck.png"],
-  "pronouns": ["Any", "They/Them", "She/Her", "He/Him", "She/They", "He/They"]
+  "images": [
+    "image-missing.png",
+    "image-missing1.png",
+    "image-missing2.png",
+    "image-missing3.png",
+    "duck_profile.jpg",
+    "image-missing4.png",
+    "image-missing5.png",
+    "mildertn_testing.png"
+  ],
+  "pronouns": [
+    "Prefer Name",
+    "Any Pronoun",
+    "They/Them",
+    "She/Her",
+    "He/Him",
+    "She/They",
+    "He/They",
+    "They/She",
+    "They/He"
+  ]
 }

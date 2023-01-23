@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -72,7 +73,7 @@
                         <div class="card-body p-2">
                             <blockquote class="blockquote mb-0">
                                 <p>${post.content}</p>
-                                <footer class="blockquote-footer postCardQuoted">${post.user} <cite title="Source Title">(${d.getDay()}/${d.getMonth()}/${d.getFullYear()} - ${d.getHours()}:${d.getMinutes()})</cite></footer>
+                                <footer class="blockquote-footer postCardQuoted"><a href="javascript:showUser('${post.user}')">@${post.user}</a> <cite title="Source Title">(${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} - ${formatAMPM(d)})</cite></footer>
                             </blockquote>
                         </div>
                         <div class="card-body postCardFooter">
@@ -175,12 +176,12 @@
                             commentsHTML += `<li class="bg-dark text-white list-group-item d-flex justify-content-between align-items-start">
                                     <div class="ms-2 me-auto">
                                         <div class="fw-bold">
-                                            @${comment.user}
+                                            <a href="javascript:showUser('${comment.user}')">@${comment.user}</a>
                                         </div>
                                             ${comment.comment}
                                     </div>
                                     <span class="badge bg-secondary border border-white rounded-pill">
-                                        ${d.getDay()}/${d.getMonth()}/${d.getFullYear()} ${formatAMPM(d)}
+                                        ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${formatAMPM(d)}
                                     </span >
                                 </li > `
                         })
@@ -199,8 +200,167 @@
             var strTime = hours + ':' + minutes + ' ' + ampm;
             return strTime;
         }
+        function showUser(username) {
+            fetch(`/api/user/get/${username}`, { method: 'GET' })
+                .then(res => res.json())
+                .then(data => fetch(`/api/image/get/url/${data.static.image}`, { method: 'GET' })
+                    .then(res => res.json()).then(image =>
+                        fetch(`/api/pronoun/get/${data.static.pronoun}`, { method: 'GET' }).then(res => res.json()).then(pronoun => {
+                            let d = new Date(data.static.creation)
+                            document.getElementById("UserImage").setAttribute("src", `/user_images/${image}`);
+                            if (data.status == 200) document.getElementById("UserName").textContent = username;
+                            else document.getElementById("UserName").textContent = "User Error: User Does Not Exist"
+                            document.getElementById("UserPronoun").textContent = pronoun;
+                            document.getElementById("UserJoined").textContent = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
+                            document.getElementById("UserPosts").textContent = data.dynamic.posts
+                            document.getElementById("UserLikes").textContent = data.dynamic.likes
+                            document.getElementById("UserLiked").textContent = data.dynamic.liked
+                            if (username === document.getElementById("username").value) document.getElementById("editIcon").hidden = false; else document.getElementById("editIcon").hidden = true
+                            document.getElementById("userProfile").hidden = false
+                        })
+                    ))
+        }
+
+        function closeUser() {
+            document.getElementById("userProfile").hidden = true
+        }
+
+        function uploadImage(next) {
+            const formData = new FormData(document.getElementById("imageUploadForm"))
+            fetch("/api/upload/image", { method: "POST", body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.status == 201) {
+                        document.getElementById("imageUploadFormSelect").value = null;
+                        closeUpload();
+                    }
+                })
+        }
+
+        function closeUpload() {
+            document.getElementById("imageUploadSection").hidden = true
+            document.getElementById("imageUploadFormSelect").value = null
+        }
+
+        function showUploadImage() {
+            document.getElementById("imageUploadFormSelect").value = null
+            document.getElementById("imageUploadSection").hidden = false
+        }
+
+        function showEditIcon() {
+            // Check profileDisplay is Current User
+            if (document.getElementById("username").value !== document.getElementById("UserName").innerText) return;
+
+            // Load List of Images
+            fetch('/api/image/get/all', { method: "GET" }).then(res => res.json()).then(data => {
+                html = ""
+                data.forEach((val, ind) => {
+                    html += `<option value="${ind}">${ind} : ${val}</option>`
+                })
+                document.getElementById("imageList").innerHTML = html
+
+                // Get Users Current Icon
+                fetch(`/api/image/user/${document.getElementById("username").value}`, { method: "GET" }).then(res => res.json()).then(data => {
+
+                    document.getElementById("previewImage").setAttribute("src", `/user_images/${data.source}`)
+                    document.getElementById("previewCaption").innerText = `${data.index} : ${data.source}`
+
+                    document.getElementById("imageList").value = data.index
+
+                    // Set Default Switch Button
+                    document.getElementById("previewSwitch").innerText = 'Preview Selected Image'
+                    previewingCurrent = true
+
+                    // Show Section
+                    document.getElementById("editIconSection").hidden = false
+                })
+            })
+        }
+
+        var previewingCurrent = true
+
+        function switchPreview() {
+            if (previewingCurrent) {
+                // Check if there is an image selected
+                if (document.getElementById("imageList").value !== null) {
+                    imageIndex = document.getElementById("imageList").value
+                    // Switch to previewing that image
+                    fetch(`/api/image/get/url/${imageIndex}`, { method: "GET" }).then(res => res.json()).then(data => {
+                        document.getElementById("previewImage").setAttribute("src", `/user_images/${data}`)
+                        document.getElementById("previewCaption").innerText = `${imageIndex} : ${data}`
+                        // Change Switch Button Text
+                        document.getElementById("previewSwitch").innerText = 'Preview Current Icon'
+                        previewingCurrent = false
+                    })
+                } else alert("you need to select an image from the list to preview it")
+            } else {
+                fetch(`/api/image/user/${document.getElementById("username").value}`, { method: "GET" }).then(res => res.json()).then(data => {
+
+                    document.getElementById("previewImage").setAttribute("src", `/user_images/${data.source}`)
+                    document.getElementById("previewCaption").innerText = `${data.index} : ${data.source}`
+
+                    // Set Default Switch Button
+                    document.getElementById("previewSwitch").innerText = 'Preview Selected Image'
+                    previewingCurrent = true
+                })
+            }
+        }
+
+        function updatePreview() {
+            if (!previewingCurrent) {
+                // Check if there is an image selected
+                if (document.getElementById("imageList").value !== null) {
+                    imageIndex = document.getElementById("imageList").value
+                    // Switch to previewing that image
+                    fetch(`/api/image/get/url/${imageIndex}`, { method: "GET" }).then(res => res.json()).then(data => {
+                        document.getElementById("previewImage").setAttribute("src", `/user_images/${data}`)
+                        document.getElementById("previewCaption").innerText = `${imageIndex} : ${data}`
+                        // Change Switch Button Text
+                        document.getElementById("previewSwitch").innerText = 'Preview Current Icon'
+                        previewingCurrent = false
+                    })
+                } else alert("you need to select an image from the list to preview it")
+            }
+        }
+
+        function setIcon() {
+            fetch(`/api/user/image/set`,
+                {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById("username").value,
+                        image: document.getElementById("imageList").value
+                    })
+                }).then(res => res.json()).then(data => {
+                    fetch(`/api/image/get/url/${data.static.image}`, { method: 'GET' })
+                        .then(res => res.json()).then(image =>
+                            fetch(`/api/pronoun/get/${data.static.pronoun}`, { method: 'GET' }).then(res => res.json()).then(pronoun => {
+                                let d = new Date(data.static.creation)
+                                document.getElementById("UserImage").setAttribute("src", `/user_images/${image}`);
+                                if (data.status == 200) document.getElementById("UserName").textContent = document.getElementById("username").value;
+                                document.getElementById("UserPronoun").textContent = pronoun;
+                                document.getElementById("UserJoined").textContent = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
+                                document.getElementById("UserPosts").textContent = data.dynamic.posts
+                                document.getElementById("UserLikes").textContent = data.dynamic.likes
+                                document.getElementById("UserLiked").textContent = data.dynamic.liked
+                                document.getElementById("editIcon").hidden = false
+                                document.getElementById("userProfile").hidden = false
+                                closeEditIcon()
+                            })
+                        )
+                })
+        }
+
+        function closeEditIcon() {
+            document.getElementById("editIconSection").hidden = true
+        }
     </script>
 </head>
+<!-- ! BODY BELOW -->
 
 <body>
     <!-- * LOGIN PAGE -->
@@ -248,7 +408,7 @@
                             <form action="javascript: addPost()" class="row g-3 needs-validation" novalidate>
                                 <div class="col-md-12 d-flex justify-content-center">
                                     <div class="input-group has-validation">
-                                        <input type="text" class="form-control" id="newTitle" placeholder="Post Title..." required></input>
+                                        <input type="text" class="form-control" id="newTitle" placeholder="Post Title..." required>
                                         <div class="invalid-feedback">
                                             You need a title to post
                                         </div>
@@ -289,7 +449,7 @@
                                                 <button class="btn btn-outline-light btn-lg px-4" onclick="newPost()" type="submit">New Post</button>
                                             </div>
                                             <div class="col-6 col-sm-12">
-                                                <button class="btn btn-outline-light btn-lg px-4" onclick="setIcon()" type="submit">Edit Profile</button>
+                                                <button class="btn btn-outline-light btn-lg px-4" onclick="showUser(document.getElementById('username').value)" type="submit">Edit Profile</button>
                                             </div>
                                             <div class="col-6 col-sm-12">
                                                 <button class="btn btn-outline-light btn-lg px-4" onclick="logout()" type="submit">Logout</button>
@@ -310,6 +470,107 @@
             </div>
         </div>
     </section>
+
+    <!-- * View User Profile -->
+
+    <section id="userProfile" class="vh-100 vw-100 gradient-custom position-absolute top-50 start-50 translate-middle" style="background-color: #9e9e9e79;" hidden>
+        <div class="container py-5 h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col col-md-9 col-lg-7 col-xl-5">
+                    <div class="card bg-dark " style="border-radius: 15px;">
+                        <div class="card-body p-4">
+                            <div class="d-flex text-white">
+                                <span onclick="closeUser()" type="button" class="btn-close btn-close-white position-absolute translate-middle border border-dark" aria-label="Close" style=" top:10%; left:90%; "></span>
+                                <div class="flex-sm-shrink-0">
+                                    <img id="UserImage" src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-profiles/avatar-1.webp" alt="Generic placeholder image" class="img-fluid" style="width: 180px; border-radius: 10px;">
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="mb-1">@<span id="UserName"></span></h5>
+                                    <p id="UserPronoun" class="mb-2 pb-1 text-secondary">Senior Journalist</p>
+                                    <div class="d-flex justify-content-start rounded-3 p-2 mb-2 text-center" style="background-color: #303030;">
+                                        <div>
+                                            <p class="small mb-1 fw-bold">User Joined</p>
+                                            <p id="UserJoined" class="mb-0">41</p>
+                                        </div>
+                                        <div class="px-3">
+                                            <p class="small mb-1 fw-bold">Posts</p>
+                                            <p id="UserPosts" class="mb-0">3000000</p>
+                                        </div>
+                                        <div class="pe-3">
+                                            <p class="small mb-1 fw-bold">Likes</p>
+                                            <p id="UserLikes" class="mb-0">8.5</p>
+                                        </div>
+                                        <div>
+                                            <p class="small mb-1 fw-bold">Liked</p>
+                                            <p id="UserLiked" class="mb-0">8.5</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex pt-1">
+                                        <button onclick="showEditIcon()" id="editIcon" type="button" class="btn btn-outline-primary me-1 flex-grow-1" hidden>Change Icon</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- * Image Select -->
+    <section id="editIconSection" class="vh-100 vw-100 gradient-custom position-absolute top-50 start-50 translate-middle" style="background-color: #9e9e9e79;" hidden>
+        <div class="container py-5 h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col col-md-9 col-lg-7 col-xl-5">
+                    <div class="card bg-dark " style="border-radius: 15px;">
+                        <div class="card-body p-5 text-white">
+                            <span onclick="closeEditIcon()" type="button" class="btn-close btn-close-white position-absolute translate-middle border border-dark" aria-label="Close" style=" top:10%; left:90%; "></span>
+                            <h3>Change Icon</h3>
+                            <!-- Image Preview w/ caption of id & name | Tabs: Current, Selected -->
+                            <button id="previewSwitch" class="mx-auto d-block btn btn-outline-light" onclick="switchPreview()">Preview Selected Icon</button>
+                            <img class="img-fluid m-3 rounded mx-auto d-block border border-white" id="previewImage" src="/user_images/duck.png">
+                            <p class="text-center" id="previewCaption">1 - duck.png</p>
+                            <!-- Radio Select list of images: image id | image name -->
+                            <select onchange="updatePreview()" id="imageList" class="form-select my-3" size="3" aria-label="size 3 select example">
+                                <option selected>Open this select menu</option>
+                                <option value="1">One</option>
+                                <option value="2">Two</option>
+                                <option value="3">Three</option>
+                            </select>
+                            <!-- Reload Image List -->
+                            <button class="btn btn-info" onclick="showEditIcon()">Reload List</button>
+                            <!-- Upload Image Option -->
+                            <button class="btn btn-warning" onclick="showUploadImage()">Upload Image</button>
+                            <!-- Select image button -->
+                            <button class="btn btn-success" onclick="setIcon()">Set Icon</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- * Image Upload -->
+
+    <section id="imageUploadSection" class="vh-100 vw-100 gradient-custom position-absolute top-50 start-50 translate-middle" style="background-color: #9e9e9e79;" hidden>
+        <div class="container py-5 h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col col-md-9 col-lg-7 col-xl-5">
+                    <div class="card bg-dark " style="border-radius: 15px;">
+                        <div class="card-body p-4 text-white">
+                            <span onclick="closeUpload()" type="button" class="btn-close btn-close-white position-absolute translate-middle border border-dark" aria-label="Close" style=" top:10%; left:90%; "></span>
+                            <h3>Upload an Image to the Server</h3> <br>
+                            <form id="imageUploadForm" class="mb-0" action="javascript:uploadImage()" enctype="multipart/form-data">
+                                <input id="imageUploadFormSelect" type="file" name="image" />
+                                <button type="submit">Upload</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
 </body>
 
 </html>

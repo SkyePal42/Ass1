@@ -1,2 +1,5 @@
 node_modules
-data.json
+# data.json
+data_old.json
+assets/user_images
+!assets/user_images/image-missing.png
