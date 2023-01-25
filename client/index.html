@@ -43,7 +43,14 @@
             })
 
         }
-
+        function NetworkError(error) {
+            document.getElementById("Network_Error_Prompt").innerHTML +=
+                `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Network Connection Error! Try Again Later.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`
+        }
 
         // Twister Scripts
         async function login() {
@@ -60,13 +67,15 @@
             document.getElementById("postsSection").hidden = true;
         }
         async function loadPosts(next) {
-            var res = await fetch(`api/post/get/all/${document.getElementById("username").value}`)
-            let postsData = await res.json()
-            let postsHTML = ""
-            postsData.reverse().forEach(post => {
-                let d = new Date(post.creationDate)
-                postsHTML +=
-                    `<div class="accordion-item card text-center postCardBody mb-3" id="post${post.id}Header">
+            try {
+                document.getElementById("Network_Error_Prompt").hidden = true
+                var res = await fetch(`api/post/get/all/${document.getElementById("username").value}`)
+                let postsData = await res.json()
+                let postsHTML = ""
+                postsData.reverse().forEach(post => {
+                    let d = new Date(post.creationDate)
+                    postsHTML +=
+                        `<div class="accordion-item card text-center postCardBody mb-3" id="post${post.id}Header">
                         <div class="card-header postCardHeader p-2">
                             <p class="fs-2 mb-0">${post.title}</p>
                         </div>
@@ -106,33 +115,36 @@
                             </form>
                         </div>
                     </div>`
-            });
-            document.getElementById("postsFeed").innerHTML = postsHTML;
-            let username = document.getElementById("username").value
-            postsData.forEach(post => {
-                document.getElementById(`post${post.id}Like`).addEventListener('click', async (event) => {
-                    fetch(`/api/post/like`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ post: post.id, user: username }),
-                    })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.status == 200) {
-                                document.getElementById(`post${post.id}Like`).innerHTML = `${data.liked ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>'} ${data.likes}`
-                            }
+                });
+                document.getElementById("postsFeed").innerHTML = postsHTML;
+                let username = document.getElementById("username").value
+                postsData.forEach(post => {
+                    document.getElementById(`post${post.id}Like`).addEventListener('click', async (event) => {
+                        fetch(`/api/post/like`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ post: post.id, user: username }),
                         })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.status == 200) {
+                                    document.getElementById(`post${post.id}Like`).innerHTML = `${data.liked ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>'} ${data.likes}`
+                                }
+                            })
+                    })
                 })
-            })
-            postsData.forEach(post => loadComments(post.id))
-            try {
-                next()
-            } catch (error) {
+                postsData.forEach(post => loadComments(post.id))
+                try {
+                    next()
+                } catch (error) {
 
+                }
+                formValidationGenerator()
+            } catch (e) {
+                NetworkError(e)
             }
-            formValidationGenerator()
         }
         function newPost() {
             document.getElementById("addPost").hidden = false;
@@ -143,37 +155,46 @@
             document.getElementById("newContent").value = "";
         }
         function addPost() {
-            fetch(`/api/post/add`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ title: document.getElementById("newTitle").value, content: document.getElementById("newContent").value, user: document.getElementById("username").value }),
-            })
-                .then(res => loadPosts(closeNewPost()))
+            try {
+                fetch(`/api/post/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ title: document.getElementById("newTitle").value, content: document.getElementById("newContent").value, user: document.getElementById("username").value }),
+                })
+                    .then(res => loadPosts(closeNewPost()))
+            } catch (e) {
+                NetworkError(e)
+            }
         }
         function addComment(postID) {
-            fetch(`/api/post/comment/add`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ comment: document.getElementById(`${postID}NewComment`).value, user: document.getElementById("username").value, post: postID }),
-            })
-                .then(res => { document.getElementById(`${postID}NewComment`).value = ""; loadComments(postID) })
+            try {
+                fetch(`/api/post/comment/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ comment: document.getElementById(`${postID}NewComment`).value, user: document.getElementById("username").value, post: postID }),
+                })
+                    .then(res => { document.getElementById(`${postID}NewComment`).value = ""; loadComments(postID) })
+            } catch (e) {
+                NetworkError(e)
+            }
         }
         function loadComments(postID) {
-            fetch(`/api/post/comment/get/${postID}`, {
-                method: 'GET'
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status == 200) {
-                        let comments = data.comments
-                        let commentsHTML = ""
-                        comments.forEach(comment => {
-                            let d = new Date(comment.creationDate)
-                            commentsHTML += `<li class="bg-dark text-white list-group-item d-flex justify-content-between align-items-start">
+            try {
+                fetch(`/api/post/comment/get/${postID}`, {
+                    method: 'GET'
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status == 200) {
+                            let comments = data.comments
+                            let commentsHTML = ""
+                            comments.forEach(comment => {
+                                let d = new Date(comment.creationDate)
+                                commentsHTML += `<li class="bg-dark text-white list-group-item d-flex justify-content-between align-items-start">
                                     <div class="ms-2 me-auto">
                                         <div class="fw-bold">
                                             <a href="javascript:showUser('${comment.user}')">@${comment.user}</a>
@@ -184,11 +205,14 @@
                                         ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${formatAMPM(d)}
                                     </span >
                                 </li > `
-                        })
-                        document.getElementById(`${postID}CommentsFeed`).innerHTML = commentsHTML
-                    }
+                            })
+                            document.getElementById(`${postID}CommentsFeed`).innerHTML = commentsHTML
+                        }
 
-                })
+                    })
+            } catch (e) {
+                NetworkError(e)
+            }
         }
         function formatAMPM(date) {
             var hours = date.getHours();
@@ -201,24 +225,28 @@
             return strTime;
         }
         function showUser(username) {
-            fetch(`/api/user/get/${username}`, { method: 'GET' })
-                .then(res => res.json())
-                .then(data => fetch(`/api/image/get/url/${data.static.image}`, { method: 'GET' })
-                    .then(res => res.json()).then(image =>
-                        fetch(`/api/pronoun/get/${data.static.pronoun}`, { method: 'GET' }).then(res => res.json()).then(pronoun => {
-                            let d = new Date(data.static.creation)
-                            document.getElementById("UserImage").setAttribute("src", `/user_images/${image}`);
-                            if (data.status == 200) document.getElementById("UserName").textContent = username;
-                            else document.getElementById("UserName").textContent = "User Error: User Does Not Exist"
-                            document.getElementById("UserPronoun").textContent = pronoun;
-                            document.getElementById("UserJoined").textContent = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
-                            document.getElementById("UserPosts").textContent = data.dynamic.posts
-                            document.getElementById("UserLikes").textContent = data.dynamic.likes
-                            document.getElementById("UserLiked").textContent = data.dynamic.liked
-                            if (username === document.getElementById("username").value) document.getElementById("editIcon").hidden = false; else document.getElementById("editIcon").hidden = true
-                            document.getElementById("userProfile").hidden = false
-                        })
-                    ))
+            try {
+                fetch(`/api/user/get/${username}`, { method: 'GET' })
+                    .then(res => res.json())
+                    .then(data => fetch(`/api/image/get/url/${data.static.image}`, { method: 'GET' })
+                        .then(res => res.json()).then(image =>
+                            fetch(`/api/pronoun/get/${data.static.pronoun}`, { method: 'GET' }).then(res => res.json()).then(pronoun => {
+                                let d = new Date(data.static.creation)
+                                document.getElementById("UserImage").setAttribute("src", `/user_images/${image}`);
+                                if (data.status == 200) document.getElementById("UserName").textContent = username;
+                                else document.getElementById("UserName").textContent = "User Error: User Does Not Exist"
+                                document.getElementById("UserPronoun").textContent = pronoun;
+                                document.getElementById("UserJoined").textContent = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
+                                document.getElementById("UserPosts").textContent = data.dynamic.posts
+                                document.getElementById("UserLikes").textContent = data.dynamic.likes
+                                document.getElementById("UserLiked").textContent = data.dynamic.liked
+                                if (username === document.getElementById("username").value) document.getElementById("editIcon").hidden = false; else document.getElementById("editIcon").hidden = true
+                                document.getElementById("userProfile").hidden = false
+                            })
+                        ))
+            } catch (e) {
+                NetworkError(e)
+            }
         }
 
         function closeUser() {
@@ -226,16 +254,20 @@
         }
 
         function uploadImage(next) {
-            const formData = new FormData(document.getElementById("imageUploadForm"))
-            fetch("/api/upload/image", { method: "POST", body: formData })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message);
-                    if (data.status == 201) {
-                        document.getElementById("imageUploadFormSelect").value = null;
-                        closeUpload();
-                    }
-                })
+            try {
+                const formData = new FormData(document.getElementById("imageUploadForm"))
+                fetch("/api/upload/image", { method: "POST", body: formData })
+                    .then(res => res.json())
+                    .then(data => {
+                        alert(data.message);
+                        if (data.status == 201) {
+                            document.getElementById("imageUploadFormSelect").value = null;
+                            closeUpload();
+                        }
+                    })
+            } catch (e) {
+                NetworkError(e)
+            }
         }
 
         function closeUpload() {
@@ -249,110 +281,126 @@
         }
 
         function showEditIcon() {
-            // Check profileDisplay is Current User
-            if (document.getElementById("username").value !== document.getElementById("UserName").innerText) return;
+            try {
+                // Check profileDisplay is Current User
+                if (document.getElementById("username").value !== document.getElementById("UserName").innerText) return;
 
-            // Load List of Images
-            fetch('/api/image/get/all', { method: "GET" }).then(res => res.json()).then(data => {
-                html = ""
-                data.forEach((val, ind) => {
-                    html += `<option value="${ind}">${ind} : ${val}</option>`
+                // Load List of Images
+                fetch('/api/image/get/all', { method: "GET" }).then(res => res.json()).then(data => {
+                    html = ""
+                    data.forEach((val, ind) => {
+                        html += `<option value="${ind}">${ind} : ${val}</option>`
+                    })
+                    document.getElementById("imageList").innerHTML = html
+
+                    // Get Users Current Icon
+                    fetch(`/api/image/user/${document.getElementById("username").value}`, { method: "GET" }).then(res => res.json()).then(data => {
+
+                        document.getElementById("previewImage").setAttribute("src", `/user_images/${data.source}`)
+                        document.getElementById("previewCaption").innerText = `${data.index} : ${data.source}`
+
+                        document.getElementById("imageList").value = data.index
+
+                        // Set Default Switch Button
+                        document.getElementById("previewSwitch").innerText = 'Preview Selected Image'
+                        previewingCurrent = true
+
+                        // Show Section
+                        document.getElementById("editIconSection").hidden = false
+                    })
                 })
-                document.getElementById("imageList").innerHTML = html
-
-                // Get Users Current Icon
-                fetch(`/api/image/user/${document.getElementById("username").value}`, { method: "GET" }).then(res => res.json()).then(data => {
-
-                    document.getElementById("previewImage").setAttribute("src", `/user_images/${data.source}`)
-                    document.getElementById("previewCaption").innerText = `${data.index} : ${data.source}`
-
-                    document.getElementById("imageList").value = data.index
-
-                    // Set Default Switch Button
-                    document.getElementById("previewSwitch").innerText = 'Preview Selected Image'
-                    previewingCurrent = true
-
-                    // Show Section
-                    document.getElementById("editIconSection").hidden = false
-                })
-            })
+            } catch (e) {
+                NetworkError(e)
+            }
         }
 
         var previewingCurrent = true
 
         function switchPreview() {
-            if (previewingCurrent) {
-                // Check if there is an image selected
-                if (document.getElementById("imageList").value !== null) {
-                    imageIndex = document.getElementById("imageList").value
-                    // Switch to previewing that image
-                    fetch(`/api/image/get/url/${imageIndex}`, { method: "GET" }).then(res => res.json()).then(data => {
-                        document.getElementById("previewImage").setAttribute("src", `/user_images/${data}`)
-                        document.getElementById("previewCaption").innerText = `${imageIndex} : ${data}`
-                        // Change Switch Button Text
-                        document.getElementById("previewSwitch").innerText = 'Preview Current Icon'
-                        previewingCurrent = false
+            try {
+                if (previewingCurrent) {
+                    // Check if there is an image selected
+                    if (document.getElementById("imageList").value !== null) {
+                        imageIndex = document.getElementById("imageList").value
+                        // Switch to previewing that image
+                        fetch(`/api/image/get/url/${imageIndex}`, { method: "GET" }).then(res => res.json()).then(data => {
+                            document.getElementById("previewImage").setAttribute("src", `/user_images/${data}`)
+                            document.getElementById("previewCaption").innerText = `${imageIndex} : ${data}`
+                            // Change Switch Button Text
+                            document.getElementById("previewSwitch").innerText = 'Preview Current Icon'
+                            previewingCurrent = false
+                        })
+                    } else alert("you need to select an image from the list to preview it")
+                } else {
+                    fetch(`/api/image/user/${document.getElementById("username").value}`, { method: "GET" }).then(res => res.json()).then(data => {
+
+                        document.getElementById("previewImage").setAttribute("src", `/user_images/${data.source}`)
+                        document.getElementById("previewCaption").innerText = `${data.index} : ${data.source}`
+
+                        // Set Default Switch Button
+                        document.getElementById("previewSwitch").innerText = 'Preview Selected Image'
+                        previewingCurrent = true
                     })
-                } else alert("you need to select an image from the list to preview it")
-            } else {
-                fetch(`/api/image/user/${document.getElementById("username").value}`, { method: "GET" }).then(res => res.json()).then(data => {
-
-                    document.getElementById("previewImage").setAttribute("src", `/user_images/${data.source}`)
-                    document.getElementById("previewCaption").innerText = `${data.index} : ${data.source}`
-
-                    // Set Default Switch Button
-                    document.getElementById("previewSwitch").innerText = 'Preview Selected Image'
-                    previewingCurrent = true
-                })
+                }
+            } catch (e) {
+                NetworkError(e)
             }
         }
 
         function updatePreview() {
-            if (!previewingCurrent) {
-                // Check if there is an image selected
-                if (document.getElementById("imageList").value !== null) {
-                    imageIndex = document.getElementById("imageList").value
-                    // Switch to previewing that image
-                    fetch(`/api/image/get/url/${imageIndex}`, { method: "GET" }).then(res => res.json()).then(data => {
-                        document.getElementById("previewImage").setAttribute("src", `/user_images/${data}`)
-                        document.getElementById("previewCaption").innerText = `${imageIndex} : ${data}`
-                        // Change Switch Button Text
-                        document.getElementById("previewSwitch").innerText = 'Preview Current Icon'
-                        previewingCurrent = false
-                    })
-                } else alert("you need to select an image from the list to preview it")
+            try {
+                if (!previewingCurrent) {
+                    // Check if there is an image selected
+                    if (document.getElementById("imageList").value !== null) {
+                        imageIndex = document.getElementById("imageList").value
+                        // Switch to previewing that image
+                        fetch(`/api/image/get/url/${imageIndex}`, { method: "GET" }).then(res => res.json()).then(data => {
+                            document.getElementById("previewImage").setAttribute("src", `/user_images/${data}`)
+                            document.getElementById("previewCaption").innerText = `${imageIndex} : ${data}`
+                            // Change Switch Button Text
+                            document.getElementById("previewSwitch").innerText = 'Preview Current Icon'
+                            previewingCurrent = false
+                        })
+                    } else alert("you need to select an image from the list to preview it")
+                }
+            } catch (e) {
+                NetworkError(e)
             }
         }
 
         function setIcon() {
-            fetch(`/api/user/image/set`,
-                {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        username: document.getElementById("username").value,
-                        image: document.getElementById("imageList").value
+            try {
+                fetch(`/api/user/image/set`,
+                    {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            username: document.getElementById("username").value,
+                            image: document.getElementById("imageList").value
+                        })
+                    }).then(res => res.json()).then(data => {
+                        fetch(`/api/image/get/url/${data.static.image}`, { method: 'GET' })
+                            .then(res => res.json()).then(image =>
+                                fetch(`/api/pronoun/get/${data.static.pronoun}`, { method: 'GET' }).then(res => res.json()).then(pronoun => {
+                                    let d = new Date(data.static.creation)
+                                    document.getElementById("UserImage").setAttribute("src", `/user_images/${image}`);
+                                    if (data.status == 200) document.getElementById("UserName").textContent = document.getElementById("username").value;
+                                    document.getElementById("UserPronoun").textContent = pronoun;
+                                    document.getElementById("UserJoined").textContent = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
+                                    document.getElementById("UserPosts").textContent = data.dynamic.posts
+                                    document.getElementById("UserLikes").textContent = data.dynamic.likes
+                                    document.getElementById("UserLiked").textContent = data.dynamic.liked
+                                    document.getElementById("editIcon").hidden = false
+                                    document.getElementById("userProfile").hidden = false
+                                    closeEditIcon()
+                                })
+                            )
                     })
-                }).then(res => res.json()).then(data => {
-                    fetch(`/api/image/get/url/${data.static.image}`, { method: 'GET' })
-                        .then(res => res.json()).then(image =>
-                            fetch(`/api/pronoun/get/${data.static.pronoun}`, { method: 'GET' }).then(res => res.json()).then(pronoun => {
-                                let d = new Date(data.static.creation)
-                                document.getElementById("UserImage").setAttribute("src", `/user_images/${image}`);
-                                if (data.status == 200) document.getElementById("UserName").textContent = document.getElementById("username").value;
-                                document.getElementById("UserPronoun").textContent = pronoun;
-                                document.getElementById("UserJoined").textContent = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
-                                document.getElementById("UserPosts").textContent = data.dynamic.posts
-                                document.getElementById("UserLikes").textContent = data.dynamic.likes
-                                document.getElementById("UserLiked").textContent = data.dynamic.liked
-                                document.getElementById("editIcon").hidden = false
-                                document.getElementById("userProfile").hidden = false
-                                closeEditIcon()
-                            })
-                        )
-                })
+            } catch (e) {
+                NetworkError(e)
+            }
         }
 
         function closeEditIcon() {
@@ -570,7 +618,9 @@
             </div>
         </div>
     </section>
-
+    <!-- * Network Error Alert -->
+    <div id="Network_Error_Prompt" style="z-index: 10000;" class="position-absolute  bottom-0 end-0 mx-3 mb-3 h-25 overflow-auto flex-column-reverse d-flex align-items-end" role="alert">
+    </div>
 </body>
 
 </html>
